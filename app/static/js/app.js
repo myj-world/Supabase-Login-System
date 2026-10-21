@@ -61,15 +61,20 @@ function showAuth() {
   showView('auth');
 }
 
+function showAccount() {
+  el('signed-in-email').textContent = session?.user?.email || 'Signed in';
+  showView('account');
+}
+
 function showMfaError(error) {
   el('mfa-error-message').textContent =
     error?.message || 'MFA setup failed. Please try again.';
   showView('mfa-error');
 }
 
-function updateMfaBadge(verified) {
+function updateMfaBadge(verified, required = env.requireMfa) {
   const badge = el('mfa-badge');
-  badge.textContent = verified ? 'MFA verified' : 'MFA required';
+  badge.textContent = verified ? 'MFA verified' : required ? 'MFA required' : 'MFA optional';
   badge.classList.toggle('verified', verified);
 }
 
@@ -128,9 +133,11 @@ async function onSessionReady() {
   lastProcessedAccessToken = session.access_token;
 
   if (!env.requireAuth || !env.requireMfa || decodeAal(session.access_token) === 'aal2') {
-    updateMfaBadge(decodeAal(session.access_token) === 'aal2');
-    el('signed-in-email').textContent = session.user?.email || 'Signed in';
-    showView('account');
+    updateMfaBadge(
+      decodeAal(session.access_token) === 'aal2',
+      env.requireAuth && env.requireMfa
+    );
+    showAccount();
     return;
   }
 
@@ -208,9 +215,12 @@ async function verifyMfaEnrollment(event) {
     });
     if (error) throw error;
     updateMfaBadge(true);
-    lastProcessedAccessToken = null;
-    session = (await supabaseClient.auth.getSession()).data.session;
-    await onSessionReady();
+    const { data, error: sessionError } = await supabaseClient.auth.getSession();
+    if (sessionError) throw sessionError;
+    session = data.session;
+    if (!session) throw new Error('Authentication session unavailable after MFA verification.');
+    lastProcessedAccessToken = session.access_token;
+    showAccount();
   } catch (error) {
     console.error('MFA enrollment verification failed:', error);
     showToast(error.message || 'Invalid MFA code. Please try again.', 'error');
@@ -236,9 +246,12 @@ async function verifyMfaChallenge(event) {
     });
     if (error) throw error;
     updateMfaBadge(true);
-    lastProcessedAccessToken = null;
-    session = (await supabaseClient.auth.getSession()).data.session;
-    await onSessionReady();
+    const { data, error: sessionError } = await supabaseClient.auth.getSession();
+    if (sessionError) throw sessionError;
+    session = data.session;
+    if (!session) throw new Error('Authentication session unavailable after MFA verification.');
+    lastProcessedAccessToken = session.access_token;
+    showAccount();
   } catch (error) {
     console.error('MFA challenge failed:', error);
     showToast(error.message || 'Invalid MFA code. Please try again.', 'error');

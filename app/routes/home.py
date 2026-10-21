@@ -1,6 +1,6 @@
 import os
 
-from flask import Blueprint, abort, jsonify, render_template, send_from_directory
+from flask import Blueprint, jsonify, render_template
 
 from app.services.auth import auth_required, mfa_required
 
@@ -34,10 +34,3 @@ def public_config():
             or "",
         }
     )
-
-
-@bp.route("/icon.png")
-def favicon():
-    if os.path.exists("icon.png"):
-        return send_from_directory(os.getcwd(), "icon.png", mimetype="image/png")
-    abort(404)

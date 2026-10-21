@@ -1,5 +1,5 @@
 {
-  "name": "finatlas",
+  "name": "login-signup-system",
   "version": "1.0.0",
   "description": "Supabase Auth and MFA login app (Flask)",
   "private": true,

@@ -1,15 +1,4 @@
-import re
 from typing import Optional
-
-
-def normalize_name(name: Optional[str]) -> str:
-    """Normalize a name for deterministic matching."""
-    if not name:
-        return ""
-    lowered = name.lower()
-    cleaned = re.sub(r"[^\w\s]", "", lowered)
-    collapsed = re.sub(r"\s+", "", cleaned)
-    return collapsed.strip()
 
 
 def extract_bearer_token(headers) -> Optional[str]:

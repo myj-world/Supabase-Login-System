@@ -11,8 +11,15 @@ class TestAuthPages:
         assert b'id="mfa-form"' in response.data
         assert b'id="mfa-challenge-form"' in response.data
         assert b'id="sign-out-btn"' in response.data
+        assert b"<title>Login/Signup System</title>" in response.data
+        assert b"<h1>Login/Signup System</h1>" in response.data
+        assert b"Fin" + b"Atlas" not in response.data
         assert b"screening" not in response.data.lower()
         assert b"dashboard" not in response.data.lower()
+
+    def test_removed_feature_endpoints_are_not_registered(self, client):
+        for path in ("/api/screen/single", "/api/cases", "/api/api-keys"):
+            assert client.get(path).status_code == 404
 
 
 class TestAuthEndpoint:
@@ -36,6 +43,21 @@ class TestAuthEndpoint:
         )
         monkeypatch.setattr(auth, "check_mfa_level", lambda _token: (True, "aal2"))
         monkeypatch.setattr(auth, "mfa_required", lambda: True)
+        monkeypatch.setattr(
+            "app.routes.auth.extract_bearer_token", lambda _headers: "test-token"
+        )
+        monkeypatch.setattr(
+            "app.routes.auth.get_auth_context",
+            lambda _token: {
+                "error": None,
+                "user": {"id": "user-1", "email": "user@example.com"},
+                "mfa_ok": True,
+            },
+        )
+        monkeypatch.setattr(
+            "app.routes.auth.check_mfa_level", lambda _token: (True, "aal2")
+        )
+        monkeypatch.setattr("app.routes.auth.mfa_required", lambda: True)
 
         response = client.get(
             "/api/auth/me", headers={"Authorization": "Bearer test-access-token"}
@@ -55,3 +77,4 @@ class TestHealthEndpoint:
 
         assert response.status_code == 200
         assert response.get_json()["status"] == "ok"
+        assert response.get_json()["service"] == "Login/Signup System"
