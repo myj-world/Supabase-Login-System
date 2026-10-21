@@ -19,10 +19,12 @@ Enable email/password authentication and TOTP MFA in the Supabase project. New u
 
 ```powershell
 python -m pip install -r requirements.txt
-python -m gunicorn -c gunicorn.conf.py wsgi:application
+python -m flask --app wsgi:application run --host 0.0.0.0 --port 8000
 ```
 
-The service listens on port `8000` by default. Run tests with:
+The Flask development server listens on port `8000`. It is intended for local
+development, not production. Gunicorn is supported on Unix-like systems, but
+not on Windows; use it for deployments on a supported platform. Run tests with:
 
 ```powershell
 python -m pytest
