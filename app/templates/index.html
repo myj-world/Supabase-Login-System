@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinAtlas — Secure sign in</title>
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.109.0/dist/umd/supabase.min.js"></script>
+  <script>
+    window.__ENV__ = {
+      supabaseUrl: {{ supabase_url | tojson }},
+      supabaseKey: {{ supabase_key | tojson }},
+      requireAuth: {{ require_auth | tojson }},
+      requireMfa: {{ require_mfa | tojson }}
+    };
+  </script>
+</head>
+<body>
+  <div id="app">
+    <section id="startup-view" class="startup-view" role="status" aria-live="polite">
+      <div class="startup-card">
+        <div class="startup-spinner" aria-hidden="true"></div>
+        <h1>FinAtlas</h1>
+        <p>Loading secure sign in...</p>
+      </div>
+    </section>
+
+    <main class="main auth-mode">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <section id="auth-view" class="view hidden">
+        <div class="auth-card">
+          <div class="brand brand-lg">
+            <img src="/icon.png" alt="FinAtlas" class="brand-icon-lg" onerror="this.style.display='none'">
+            <div>
+              <h1>FinAtlas</h1>
+              <span>Secure account access</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <button class="tab active" type="button" data-tab="signin">Sign in</button>
+            <button class="tab" type="button" data-tab="signup">Create account</button>
+          </div>
+          <form id="signin-form" class="auth-form">
+            <label>Email <input type="email" name="email" required autocomplete="email"></label>
+            <label>Password <input type="password" name="password" minlength="6" required autocomplete="current-password"></label>
+            <button type="submit" class="btn btn-primary">Sign in</button>
+          </form>
+          <form id="signup-form" class="auth-form hidden">
+            <label>Email <input type="email" name="email" required autocomplete="email"></label>
+            <label>Password <input type="password" name="password" minlength="6" required autocomplete="new-password"></label>
+            <button type="submit" class="btn btn-primary">Create account</button>
+          </form>
+          <p class="auth-note">Multi-factor authentication is required after sign in.</p>
+          <p id="auth-notice" class="auth-notice hidden" role="status"></p>
+        </div>
+      </section>
+
+      <section id="mfa-view" class="view hidden">
+        <div class="auth-card">
+          <h2>Set up multi-factor authentication</h2>
+          <p>Scan the QR code with an authenticator app, then enter its 6-digit code.</p>
+          <div id="mfa-qr"></div>
+          <form id="mfa-form" class="auth-form">
+            <input type="hidden" id="mfa-factor-id">
+            <label>Verification code <input type="text" id="mfa-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code"></label>
+            <button type="submit" class="btn btn-primary">Verify and continue</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="mfa-challenge-view" class="view hidden">
+        <div class="auth-card">
+          <h2>Verify your identity</h2>
+          <p>Enter the 6-digit code from your authenticator app.</p>
+          <form id="mfa-challenge-form" class="auth-form">
+            <input type="hidden" id="mfa-challenge-factor-id">
+            <label>Verification code <input type="text" id="mfa-challenge-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code"></label>
+            <button type="submit" class="btn btn-primary">Verify</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="mfa-error-view" class="view hidden">
+        <div class="auth-card">
+          <h2>MFA needs attention</h2>
+          <p id="mfa-error-message" class="auth-notice">MFA could not be started. Retry setup or sign out.</p>
+          <div class="actions">
+            <button id="mfa-retry-btn" class="btn btn-primary" type="button">Retry MFA setup</button>
+            <button id="mfa-error-sign-out-btn" class="btn btn-ghost" type="button">Sign out</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="account-view" class="view hidden">
+        <div class="auth-card">
+          <h1>Signed in</h1>
+          <p id="signed-in-email"></p>
+          <p id="mfa-badge" class="badge verified">MFA verified</p>
+          <button id="sign-out-btn" class="btn btn-ghost" type="button">Sign out</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

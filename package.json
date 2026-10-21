@@ -1,0 +1,14 @@
+{
+  "name": "finatlas",
+  "version": "1.0.0",
+  "description": "Supabase Auth and MFA login app (Flask)",
+  "private": true,
+  "scripts": {
+    "postinstall": "python -m pip install -r requirements.txt",
+    "dev": "python -m gunicorn -c gunicorn.conf.py wsgi:application",
+    "test": "python -m pytest"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
